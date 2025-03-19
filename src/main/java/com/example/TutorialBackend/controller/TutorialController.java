@@ -20,7 +20,7 @@ public class TutorialController {
     private TutorialRepository tutorialRepository;
 
     @PostMapping("/tutorials")
-    public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial){
+    public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
         Tutorial _tutorial = tutorialRepository.save(
                 new Tutorial(tutorial.getTitle(), tutorial.getDescription(), tutorial.isPublished())
         );
@@ -41,14 +41,63 @@ public class TutorialController {
         if (tutorials.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(tutorials,HttpStatus.OK);
+        return new ResponseEntity<>(tutorials, HttpStatus.OK);
     }
 
     @GetMapping("/tutorials/{id}")
     public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id)
-        throws ResourceNotFoundException{
+            throws ResourceNotFoundException {
         Tutorial _tutorial = tutorialRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("No Tutorial Found with id:" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("No Tutorial Found with id:" + id));
         return new ResponseEntity<>(_tutorial, HttpStatus.OK);
     }
-}
+
+    @PutMapping("/tutorials/{id}")
+    public ResponseEntity<Tutorial> updateTutorial(
+            @PathVariable("id") long id, @RequestBody Tutorial tutorial) throws ResourceNotFoundException {
+
+        Tutorial _tutorial = tutorialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No Tutorial found with id " + id
+                ));
+
+        _tutorial.setTitle(tutorial.getTitle());
+        _tutorial.setDescription(tutorial.getDescription());
+        _tutorial.setPublished(tutorial.isPublished());
+        return new ResponseEntity<>(tutorialRepository.save(_tutorial), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/tutorials/{id}")
+    public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id){
+        if(tutorialRepository.existsById(id)){
+            tutorialRepository.deleteById(id);
+        }
+        //tutorialRepository.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/tutorials/published")
+    public ResponseEntity<List<Tutorial>> findByPublished(){
+        List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
+            if(tutorials.isEmpty()){
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(tutorials, HttpStatus.OK);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
